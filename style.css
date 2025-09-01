@@ -1,0 +1,40 @@
+const animatedLines = [
+    {
+        // Horizontal line - positioned below the album
+        startX: () => width * 0.40,   
+        startY: () => height * 0.71,  
+        endX: () => width * 0.60,     
+        endY: () => height * 0.71,    
+        dots: 2,
+        color: "rgba(255, 200, 0, 0.8)"
+    },
+    {
+        // Vertical line - positioned to the right and below
+        startX: () => width * 0.6,    
+        startY: () => height * 0.32,   
+        endX: () => width * 0.6,      
+        endY: () => height * 0.71,    
+        dots: 2,
+        color: "rgba(255, 200, 0, 0.8)"
+    }
+];
+ const animatedLines = [
+    {
+        // Horizontal line - positioned below the album
+        startX: () => width * 0.40,   
+        startY: () => height * 0.71,  
+        endX: () => width * 0.60,     
+        endY: () => height * 0.71,    
+        dots: 2,
+        color: "rgba(255, 200, 0, 0.8)"
+    },
+    {
+        // Vertical line - positioned to the right and below
+        startX: () => width * 0.6,    
+        startY: () => height * 0.32,   
+        endX: () => width * 0.6,      
+        endY: () => height * 0.71,    
+        dots: 2,
+        color: "rgba(255, 200, 0, 0.8)"
+    }
+];
