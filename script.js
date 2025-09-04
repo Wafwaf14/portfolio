@@ -21,35 +21,103 @@ const circles = [
     { cx: 0, cy: () => height, baseRadius: 250, start: -Math.PI/2, end: 0, dots: 1, factor: -0.15, dir: -1 },
 ];
 
-// Animated lines configuration - horizontal and vertical under the first album
 const animatedLines = [
     {
-        // Horizontal line - positioned below the album
-        startX: () => width * 0.40,   
-        startY: () => height * 0.71,  
-        endX: () => width * 0.60,     
-        endY: () => height * 0.71,    
+        // Horizontal line - responsive positioning
+        startX: () => {
+            if (window.innerWidth <= 480) {
+                // Mobile: centered
+                return width * 0.23;
+            } else if (window.innerWidth <= 768) {
+                // Tablet
+                return width * 0.38;
+            } else {
+                // Desktop: original position
+                return width * 0.40;
+            }
+        },
+        startY: () => {
+            if (window.innerWidth <= 480) {
+                // Mobile: centered vertically
+                return height * 0.64;
+            } else {
+                // Desktop/Tablet: below albums
+                return height * 0.71;
+            }
+        },
+        endX: () => {
+            if (window.innerWidth <= 480) {
+                // Mobile: centered
+                return width * 0.78;
+            } else if (window.innerWidth <= 768) {
+                // Tablet
+                return width * 0.62;
+            } else {
+                // Desktop: original position
+                return width * 0.60;
+            }
+        },
+        endY: () => {
+            if (window.innerWidth <= 480) {
+                // Mobile: centered vertically
+                return height * 0.64;
+            } else {
+                // Desktop/Tablet: below albums
+                return height * 0.71;
+            }
+        },
         dots: 2,
-        baseColor: "255, 200, 0" // Store RGB values separately for opacity control
+        baseColor: "255, 200, 0"
     },
     {
-        // Vertical line - positioned to the right and below
-        startX: () => width * 0.6,    
-        startY: () => height * 0.32,   
-        endX: () => width * 0.6,      
-        endY: () => height * 0.71,    
+        // Vertical line - responsive positioning
+        startX: () => {
+            if (window.innerWidth <= 480) {
+                // Mobile: centered horizontally
+                return width * 0.78;
+            } else {
+                // Desktop/Tablet: right side
+                return width * 0.6;
+            }
+        },
+        startY: () => {
+            if (window.innerWidth <= 480) {
+                // Mobile: start higher
+                return height * 0.38;
+            } else {
+                // Desktop/Tablet: original position
+                return height * 0.32;
+            }
+        },
+        endX: () => {
+            if (window.innerWidth <= 480) {
+                // Mobile: centered horizontally
+                return width * 0.78;
+            } else {
+                // Desktop/Tablet: right side
+                return width * 0.6;
+            }
+        },
+        endY: () => {
+            if (window.innerWidth <= 480) {
+                // Mobile: end lower
+                return height * 0.64;
+            } else {
+                // Desktop/Tablet: original position
+                return height * 0.71;
+            }
+        },
         dots: 2,
         baseColor: "255, 200, 0"
     }
 ];
-
 function draw() {
     ctx.clearRect(0, 0, width, height);
 
     // Use continuous animation based on scroll
     const animationSpeed = scrollProgress * 0.01;
 
-    ctx.lineWidth = 1.5;
+    ctx.lineWidth = 1;
     ctx.strokeStyle = "rgba(0, 0, 0, 0.2)";
     
     circles.forEach((c, i) => {
@@ -94,14 +162,13 @@ function draw() {
         }
     });
 
-    // Calculate opacity for animated lines based on scroll
-    // Lines start fading at 100px and completely disappear at 300px
+
     let lineOpacity = 1;
     if (scrollProgress > 100) {
         lineOpacity = Math.max(0, 1 - (scrollProgress - 100) / 200);
     }
 
-    // Only draw animated lines if they have some opacity
+ 
     if (lineOpacity > 0) {
         animatedLines.forEach((line, lineIndex) => {
             const lineStartX = line.startX();
@@ -159,11 +226,76 @@ const container = document.querySelector('.container');
 // Array of images for the first album
 const firstAlbumImages = [
     'images/album6.jpg',
-    'images/album3.png',  // Add your second image path
-    'images/album4.jpg',  // Add your third image path
-    'images/album2.png',  // Add your fourth image path
-    'images/album6.jpg'   // Add your fifth image path
+    'images/album3.png',
+    'images/album4.jpg',
+    'images/album2.png',
+    'images/album6.jpg'
 ];
+
+// SOLUTION 1: Preload all images to avoid loading delay
+function preloadImages() {
+    firstAlbumImages.forEach(src => {
+        const img = new Image();
+        img.src = src;
+    });
+}
+
+// Configuration for image transition
+const IMAGE_TRANSITION_CONFIG = {
+    pixelsPerImage: 100,  // Images change every 100px of scroll
+    fadeInDuration: 300,  // Duration of fade-in effect in milliseconds
+    smoothTransition: true // Enable smooth transition between images
+};
+
+// Track current image for smooth transitions
+let currentImageIndex = 0;
+let isTransitioning = false;
+
+// SOLUTION 2: Dynamic spacer height based on screen size
+function setDynamicSpacerHeight() {
+    const spacer = document.querySelector('.spacer');
+    if (spacer) {
+        // Calculate based on viewport height and required scroll distance
+        const viewportHeight = window.innerHeight;
+        const numberOfImages = firstAlbumImages.length;
+        const scrollForImages = numberOfImages * IMAGE_TRANSITION_CONFIG.pixelsPerImage;
+        const scrollForAlbums = 800; // Additional scroll for album cascade effect
+        
+        // Set minimum height based on screen size
+        let spacerHeight;
+        if (window.innerWidth <= 480) {
+            // Mobile phones
+            spacerHeight = Math.max(1200, viewportHeight + scrollForImages + scrollForAlbums);
+        } else if (window.innerWidth <= 768) {
+            // Tablets
+            spacerHeight = Math.max(1500, viewportHeight + scrollForImages + scrollForAlbums);
+        } else if (window.innerWidth <= 1366) {
+            // Small laptops
+            spacerHeight = Math.max(1800, viewportHeight + scrollForImages + scrollForAlbums);
+        } else {
+            // Desktop
+            spacerHeight = Math.max(2000, viewportHeight + scrollForImages + scrollForAlbums);
+        }
+        
+        spacer.style.height = spacerHeight + 'px';
+        
+        console.log('Spacer height set to:', spacerHeight, 'px for viewport:', viewportHeight, 'px');
+    }
+}
+
+// Initialize first album image immediately (don't wait for scroll)
+function initializeFirstAlbum() {
+    const firstAlbum = albums[0];
+    const firstAlbumImg = firstAlbum?.querySelector('img');
+    
+    if (firstAlbumImg && firstAlbumImages[0]) {
+        firstAlbumImg.src = firstAlbumImages[0];
+        firstAlbumImg.dataset.currentIndex = '0';
+        // Make first album visible immediately
+        firstAlbum.style.opacity = '1';
+       // firstAlbum.style.transform = 'translate(-50%, -50%) scale(1)';
+    }
+}
 
 function animateAlbums() {
     const scrollY = window.scrollY;
@@ -171,29 +303,61 @@ function animateAlbums() {
     // Update scroll progress for continuous animation
     scrollProgress = scrollY;
     
-    // Handle first album image cycling
+    // Handle first album image cycling with slower transition
     const firstAlbum = albums[0];
-    const firstAlbumImg = firstAlbum.querySelector('img');
+    const firstAlbumImg = firstAlbum?.querySelector('img');
     
-    // Change image based on scroll position (every 50px of scroll changes image)
-    const imageIndex = Math.min(Math.floor(scrollY / 50), firstAlbumImages.length - 1);
-    
-    // Only change image if it's different from current
-    if (firstAlbumImg.dataset.currentIndex !== String(imageIndex)) {
-        firstAlbumImg.src = firstAlbumImages[imageIndex];
-        firstAlbumImg.dataset.currentIndex = imageIndex;
+    if (firstAlbumImg) {
+        // Calculate image index with configurable scroll distance
+        const newImageIndex = Math.min(
+            Math.floor(scrollY / IMAGE_TRANSITION_CONFIG.pixelsPerImage), 
+            firstAlbumImages.length - 1
+        );
+        
+        // Only change image if it's different from current and not already transitioning
+        if (newImageIndex !== currentImageIndex && !isTransitioning) {
+            currentImageIndex = newImageIndex;
+            
+            if (IMAGE_TRANSITION_CONFIG.smoothTransition) {
+                // Add smooth transition effect
+                isTransitioning = true;
+                
+                // Fade out current image
+                firstAlbumImg.style.opacity = '0.7';
+                firstAlbumImg.style.transition = `opacity ${IMAGE_TRANSITION_CONFIG.fadeInDuration / 2}ms ease`;
+                
+                setTimeout(() => {
+                    // Change image source
+                    firstAlbumImg.src = firstAlbumImages[currentImageIndex];
+                    firstAlbumImg.dataset.currentIndex = currentImageIndex;
+                    
+                    // Fade in new image
+                    setTimeout(() => {
+                        firstAlbumImg.style.opacity = '1';
+                        setTimeout(() => {
+                            isTransitioning = false;
+                        }, IMAGE_TRANSITION_CONFIG.fadeInDuration / 2);
+                    }, 50);
+                }, IMAGE_TRANSITION_CONFIG.fadeInDuration / 2);
+            } else {
+                // Direct image change without transition
+                firstAlbumImg.src = firstAlbumImages[currentImageIndex];
+                firstAlbumImg.dataset.currentIndex = currentImageIndex;
+            }
+        }
     }
     
     // Show/hide albums based on scroll position
-    // Increased thresholds to give time for image cycling
-    const scrollThresholds = [0, 250, 350, 450, 550];
+    // Adjusted thresholds to account for slower image transitions
+    const scrollThresholds = [0, 500, 600, 700, 800];
     
     albums.forEach((album, index) => {
         if (index === 0) {
             // First album: show in cascade after cycling through images
-            if (scrollY > 250) {
+            if (scrollY > scrollThresholds[1]) {
                 album.classList.add('show');
-            } else {
+            } else if (scrollY <= 250) {
+                // Keep first album centered when not scrolling
                 album.classList.remove('show');
             }
         } else {
@@ -207,11 +371,31 @@ function animateAlbums() {
     });
 }
 
+// Update spacer height on window resize
+window.addEventListener('resize', () => {
+    resize();
+    setDynamicSpacerHeight();
+});
+
 // Scroll event for updating scroll progress and album animation
 window.addEventListener("scroll", () => {
     animateAlbums();
 });
 
-// Start continuous animation
-draw();
-animateAlbums();
+// Initialize everything when DOM is ready
+document.addEventListener('DOMContentLoaded', () => {
+    preloadImages();
+    initializeFirstAlbum();
+    setDynamicSpacerHeight();
+    draw();
+    animateAlbums();
+});
+
+// Also initialize if script runs after DOM load
+if (document.readyState === 'complete' || document.readyState === 'interactive') {
+    preloadImages();
+    initializeFirstAlbum();
+    setDynamicSpacerHeight();
+    draw();
+    animateAlbums();
+}
